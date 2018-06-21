@@ -26,6 +26,18 @@ class Group:
             print()
             return self.group_table()
 
+    def __add__(self, other):
+        if isinstance(other, Group):
+            new = Group('All')
+            new.group_stats = defaultdict(dict)
+            new.teams.extend(self.teams)
+            new.teams.extend(other.teams)
+            for key,value in self.group_stats.items():
+                new.group_stats[key] = value
+            for key,value in other.group_stats.items():
+                new.group_stats[key] = value
+            return new
+
     def __make_array(self):
         """Создаем словарь согласно списка команд в группе и заполняем статистикой по дефолту"""
         new_stats = defaultdict(dict)
@@ -105,6 +117,8 @@ class Group:
             if len(item.split()) > 2:
                 name = '%s' % item
             elif len(item.split()) > 1:
+                name = '%s\t' % item
+            elif len(item.split()) == 1 and len(item) > 7:
                 name = '%s\t' % item
             else:
                 name = '%s\t\t' % item
