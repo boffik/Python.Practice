@@ -1,5 +1,6 @@
 from collections import defaultdict
 from dicttoxml import dicttoxml as dtx
+import pickle
 
 class Group:
     teams = []
@@ -80,7 +81,7 @@ class Group:
         self.__add_game_stats(self.teams[t1],self.teams[t2], score=game_score)
 
     def sort_list(self):
-        """Сортировка комманд группы по убыванию (сначала по очкам, потом по разнице мячей"""
+        """Сортировка комманд группы по убыванию (сначала по очкам, потом по разнице мячей)"""
         list = [(k, v['pts'], v['gf_a']) for k,v in self.group_stats.items()]
         sort_list = sorted(list, key=lambda point: (-point[1], -point[2]))
         return sort_list
@@ -102,9 +103,21 @@ class Group:
                     self.group_stats[item]['d'], self.group_stats[item]['l'], self.group_stats[item]['gf'],
                     self.group_stats[item]['ga'], self.group_stats[item]['gf_a'], self.group_stats[item]['pts']))
 
-    def save_xml(self):
-        """Сохранение статистики комманд в файл XML"""
-        xml = dtx(self.group_stats, custom_root=self.name, attr_type=False)
-        with open(self.name + '.xml', 'w') as file:
-            file.write(xml.decode('utf-8'))
+    def save_to_file(self):
+        """Сохранение статистики комманд в файл"""
+        file_name = self.name + '.group'
+        with open(file_name, 'wb') as file:
+            pickle.dump(self.group_stats, file)
         print("File is saved to disk")
+
+    def load_from_file(self):
+        import os.path
+        """Чтение статистики команд из файла"""
+        file_name = self.name + '.group'
+        if os.path.isfile(file_name):
+            with open(file_name, 'rb') as f:
+                self.group_stats = pickle.load(f)
+                self.teams = [s for s in self.group_stats.keys() if isinstance(s, str)]
+            print('OK')
+        else:
+            print('Group \'%s\' statistic file not exist' % self.name)
