@@ -9,6 +9,23 @@ class Group:
     def __init__(self, name):
         self.name = name
 
+    def __repr__(self):
+        print('Group \'%s\'' % self.name)
+        if not self.teams:
+            print('Group \'%s\' is empty' % self.name, end='')
+            return ''
+        else:
+            print()
+            return ('\n'.join(self.teams))
+
+    def __str__(self):
+        if not self.teams:
+            print('Group \'%s\' is empty' % self.name, end='')
+            return ''
+        else:
+            print()
+            return self.group_table()
+
     def __make_array(self):
         """Создаем словарь согласно списка команд в группе и заполняем статистикой по дефолту"""
         new_stats = defaultdict(dict)
@@ -64,14 +81,6 @@ class Group:
         if len(self.teams) > 1:
             self.__make_array()
 
-
-    def print_teams(self):
-        if len(self.teams) > 0:
-            for team in self.teams:
-                print(team)
-        else:
-            print('Group \'%s\' is empty' % self.name)
-
     def add_game_result(self, team1, team2, game_score):
         """Добаление результата матча в статистику"""
         t1 = self.teams.index(team1)
@@ -102,6 +111,7 @@ class Group:
             print('\t%s\t%i\t%i\t%i\t%i\t%i\t%i\t%i' % (name, self.group_stats[item]['w'],
                     self.group_stats[item]['d'], self.group_stats[item]['l'], self.group_stats[item]['gf'],
                     self.group_stats[item]['ga'], self.group_stats[item]['gf_a'], self.group_stats[item]['pts']))
+        return ''
 
     def save_to_file(self):
         """Сохранение статистики комманд в файл"""
