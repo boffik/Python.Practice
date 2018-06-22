@@ -1,5 +1,4 @@
 from collections import defaultdict
-from dicttoxml import dicttoxml as dtx
 import pickle
 
 def save(save_obj, file_name):
