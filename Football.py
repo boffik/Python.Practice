@@ -2,21 +2,32 @@ from collections import defaultdict
 from dicttoxml import dicttoxml as dtx
 import pickle
 
-class Group:
-    teams = []
-    group_stats = []
+def save(save_obj, file_name):
+    """Сохранение объекта в файл"""
+    with open(file_name, 'wb') as file:
+        pickle.dump(save_obj, file)
+    print("File is saved to disk")
 
+def load(file_name):
+    import os.path
+    load_obj = str()
+    """Чтение статистики из файла"""
+    if os.path.isfile(file_name):
+        with open(file_name, 'rb') as f:
+            load_obj = pickle.load(f)
+        print('OK')
+        return load_obj
+    else:
+        print('Statistic file not exist' % file_name)
+
+class Group(object):
     def __init__(self, name):
         self.name = name
+        self.teams = []
+        self.group_stats = []
 
     def __repr__(self):
         return 'Group \'%s\' (%i)' % (self.name, len(self.teams))
-#        if not self.teams:
-#            print('Group \'%s\' is empty' % self.name, end='')
-#            return ''
-#        else:
-#            print()
-#            return ('\n'.join(self.teams))
 
     def __str__(self):
         if not self.teams:
@@ -107,39 +118,92 @@ class Group:
 
     def group_table(self):
         """Вывод таблицы группы на экран"""
-        list = self.sort_list()
-        print('Group %s' % self.name)
-        print('\t\t\t\tWins\tDraws\tLoses\tGF\tGA\t+\-\tPts')
-        for items in list:
-            item = items[0]
-            if len(item.split()) > 2:
-                name = '%s' % item
-            elif len(item.split()) > 1:
-                name = '%s\t' % item
-            elif len(item.split()) == 1 and len(item) > 7:
-                name = '%s\t' % item
-            else:
-                name = '%s\t\t' % item
-            print('\t%s\t%i\t%i\t%i\t%i\t%i\t%i\t%i' % (name, self.group_stats[item]['w'],
-                    self.group_stats[item]['d'], self.group_stats[item]['l'], self.group_stats[item]['gf'],
-                    self.group_stats[item]['ga'], self.group_stats[item]['gf_a'], self.group_stats[item]['pts']))
-        return ''
+        s = str()
+        if self.teams:
+            list = self.sort_list()
+            s += 'Group %s\n' % self.name
+            s += '\t\t\t\tWins\tDraws\tLoses\tGF\tGA\t+\-\tPts\n'
+            for items in list:
+                item = items[0]
+                if len(item.split()) > 2:
+                    name = '%s' % item
+                elif len(item.split()) > 1:
+                    name = '%s\t' % item
+                elif len(item.split()) == 1 and len(item) > 7:
+                    name = '%s\t' % item
+                else:
+                    name = '%s\t\t' % item
+                s += '\t%s\t%i\t%i\t%i\t%i\t%i\t%i\t%i\n' % (name, self.group_stats[item]['w'],
+                        self.group_stats[item]['d'], self.group_stats[item]['l'], self.group_stats[item]['gf'],
+                        self.group_stats[item]['ga'], self.group_stats[item]['gf_a'], self.group_stats[item]['pts'])
+            return s
+        else:
+            print(self)
 
     def save_to_file(self):
-        """Сохранение статистики комманд в файл"""
+        """ Сохранение статистики комманд в файл """
         file_name = self.name + '.group'
-        with open(file_name, 'wb') as file:
-            pickle.dump(self.group_stats, file)
-        print("File is saved to disk")
+        save(self.group_stats, file_name)
 
     def load_from_file(self):
-        import os.path
-        """Чтение статистики команд из файла"""
+        """ Чтение статистики команд из файла """
         file_name = self.name + '.group'
-        if os.path.isfile(file_name):
-            with open(file_name, 'rb') as f:
-                self.group_stats = pickle.load(f)
-                self.teams = [s for s in self.group_stats.keys() if isinstance(s, str)]
-            print('OK')
+        self.group_stats = load(file_name)
+        self.teams = [s for s in self.group_stats.keys() if isinstance(s, str)]
+
+class Tournament(object):
+    """ Класс турнир """
+    def __init__(self,name):
+        self.name = name
+        self.__groups = []
+
+    def add_groups(self, num):
+        """ Метод для создания нужного количества групп турнира """
+        groups = []
+        for i in range(num):
+            groups.append(Group(chr(i + 65)))
+            print(groups[i])
+        self.__groups = groups
+
+    def __repr__(self):
+        return self.name
+
+    def __str__(self):
+        if not self.__groups:
+            return 'Tournament \'%s\' is not initialized' % self.name
         else:
-            print('Group \'%s\' statistic file not exist' % self.name)
+            for i in self.__groups:
+                print(i)
+            return str()
+
+    def __group_num(self, group):
+        """ Метод для получения номера группы по ее букве"""
+        return ord(group) - 65
+
+    def add_game_result(self, group, *teams, score):
+        """ Метод для добавления результата матча турнира в группу
+            все параметры строковые!
+            первый: буква группы (заглавная)
+            второй и третий: комманды через запятую,
+            последний: счет """
+        group_num = self.__group_num(group)
+        self.__groups[group_num].add_game_result(*teams, game_score=score)
+
+    def add_teams(self, group, *teams):
+        """ Метод для добавления команд турнира в группу
+            все параметры строковые!
+            первый: буква группы (заглавная)
+            второй и третий: комманды через запятую """
+        group_num = self.__group_num(group)
+        self.__groups[group_num].add_teams(*teams)
+
+    def save_to_file(self, name):
+        """Сохранение статистики турнира в файл"""
+        file_name = name + '.tour'
+        save(self.__groups, file_name)
+
+    def load_from_file(self, name):
+        """Чтение статистики турнира из файла"""
+        file_name = name + '.tour'
+        self.__groups = load(file_name)
+
