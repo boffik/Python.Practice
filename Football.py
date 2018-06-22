@@ -10,20 +10,18 @@ class Group:
         self.name = name
 
     def __repr__(self):
-        print('Group \'%s\'' % self.name)
-        if not self.teams:
-            print('Group \'%s\' is empty' % self.name, end='')
-            return ''
-        else:
-            print()
-            return ('\n'.join(self.teams))
+        return 'Group \'%s\' (%i)' % (self.name, len(self.teams))
+#        if not self.teams:
+#            print('Group \'%s\' is empty' % self.name, end='')
+#            return ''
+#        else:
+#            print()
+#            return ('\n'.join(self.teams))
 
     def __str__(self):
         if not self.teams:
-            print('Group \'%s\' is empty' % self.name, end='')
-            return ''
+            return 'Group \'%s\' is empty' % self.name
         else:
-            print()
             return self.group_table()
 
     def __add__(self, other):
