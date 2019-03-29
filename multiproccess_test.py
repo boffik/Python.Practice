@@ -26,9 +26,8 @@ if __name__ == "__main__":
         proc.start()
 
     time.sleep(11)
-    total_counts = 0
 
     for i in range(n_cpus):
-        total_counts += queue.get()
+        counts_num += queue.get()
 
-    print(total_counts, total_counts/n_cpus)
+    print(counts_num, counts_num/n_cpus)
